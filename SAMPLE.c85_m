@@ -1,127 +1,151 @@
 100000$TADS                                                                         
 101000 IDENTIFICATION DIVISION.                                                     
-102000 ENVIRONMENT DIVISION.                                                        
-103000 DATA DIVISION.                                                               
-104000 WORKING-STORAGE SECTION.                                                     
-105000 01  TAB-DIAS-                  PIC X(70) VALUE "1Lunes    2Martes            
-106000-         "   3Miercoles4Jueves   5Viernes  6Sabado   7Domingo  ".            
-107000 01  RTAB-DIAS- REDEFINES TAB-DIAS-.                                          
-108000     03 WS-DIA- OCCURS 7 TIMES ASCENDING KEY IS NUM-DIA-                      
-109000                        INDEXED BY WK-NOM-DIA-.                               
-110000        05 NUM-DIA-             PIC 9.                                        
-111000        05 NOM-DIA-             PIC X(9).                                     
-112000                                                                              
-113000 01  TAB-MESES-                 PIC X(144) VALUE "01Enero     02Fe            
-114000-    "brero   03Marzo     04Abril     05Mayo      06Junio     07Ju            
-115000-    "lio     08Agosto    09Septiembre10Octubre   11Noviembre 12Di            
-116000-    "ciembre ".                                                              
-117000 01  RTAB-MESES- REDEFINES TAB-MESES-.                                        
-118000     03 WS-MES- OCCURS 12 TIMES ASCENDING KEY IS NUM-MES-                     
-119000                         INDEXED BY WK-NOM-MES-.                              
-120000        05 NUM-MES-             PIC 9(02).                                    
-121000        05 NOM-MES-             PIC X(10).                                    
-122000                                                                              
-123000 01  TAB-DIAS-MES-              PIC X(48) VALUE "01310229033104300            
-124000-    "5310630073108310930103111301231".                                       
-125000 01  RTAB-DIAS-MES- REDEFINES TAB-DIAS-MES-.                                  
-126000     03 WS-DIAS-MES- OCCURS 12 TIMES ASCENDING KEY IS DIAS-MES-               
-127000                         INDEXED BY WK-DIAS-MES-.                             
-128000        05 DIAS-MES-            PIC 9(02).                                    
-129000        05 TOT-DIAS-            PIC 9(02).                                    
-130000                                                                              
-131000 01  TAB-ACUM-DIAS-             PIC X(60) VALUE "01000020310305904            
-132000-    "0900512006151071810821209243102731130412334".                           
-133000 01  RTAB-ACUM-DIAS- REDEFINES TAB-ACUM-DIAS-.                                
-134000     03 WS-ACUM-DIAS- OCCURS 12 TIMES ASCENDING KEY IS ACU-MES-               
-135000                               INDEXED BY WK-ACUM-DIAS-.                      
-136000        05 ACU-MES-             PIC 9(02).                                    
-137000        05 ACU-TOTDIAS-         PIC 9(03).                                    
-138000                                                                              
-139000                                                                              
-140000 77  WS-TOTAL-DIAS-             PIC S9(11) BINARY.                            
-141000 77  WS-ANO-BISIESTO-           PIC S9(11) BINARY.                            
-142000 77  WS-DIA-SEMANA-             PIC S9(11) BINARY.                            
-143000 77  WS-DIAS-ACUMULADOS-        PIC S9(11) BINARY.                            
-144000 77  WS-NOMBRE-MES-             PIC X(10).                                    
-145000                                                                              
-146000*---- PARAMETRO DE ENTRADA A LA FUNCION                                       
-147000                                                                              
-148000 01  WS-FECHA-TAAAAMMDD.                                                      
-149000     03 WS-TIPO-CHAR            PIC X(01).                                    
-150000     03 WS-AAAAMMDD-A           PIC 9(04).                                    
-151000     03 WS-AAAAMMDD-M           PIC 9(02).                                    
-152000     03 WS-AAAAMMDD-D           PIC 9(02).                                    
+102000******************************************************************            
+103000* retorna la fecha en formato: <diasemana>, ## de <mes> de ####  *            
+104000*  desde el 19000101 hasta el 99991231                           *            
+105000******************************************************************            
+106000 ENVIRONMENT DIVISION.                                                        
+107000 DATA DIVISION.                                                               
+108000 WORKING-STORAGE SECTION.                                                     
+109000*---- VARIABLES para la conversion de fecha a palabras                        
+110000 01  TAB-DIAS-                  PIC X(70) VALUE "1Lunes    2Martes            
+111000-         "   3Miercoles4Jueves   5Viernes  6Sabado   7Domingo  ".            
+112000 01  RTAB-DIAS- REDEFINES TAB-DIAS-.                                          
+113000     03 WS-DIA- OCCURS 7 TIMES ASCENDING KEY IS NUM-DIA-                      
+114000                        INDEXED BY WK-NOM-DIA-.                               
+115000        05 NUM-DIA-             PIC 9.                                        
+116000        05 NOM-DIA-             PIC X(9).                                     
+117000                                                                              
+118000 01  TAB-MESES-                 PIC X(144) VALUE "01Enero     02Fe            
+119000-    "brero   03Marzo     04Abril     05Mayo      06Junio     07Ju            
+120000-    "lio     08Agosto    09Septiembre10Octubre   11Noviembre 12Di            
+121000-    "ciembre ".                                                              
+122000 01  RTAB-MESES- REDEFINES TAB-MESES-.                                        
+123000     03 WS-MES- OCCURS 12 TIMES ASCENDING KEY IS NUM-MES-                     
+124000                         INDEXED BY WK-NOM-MES-.                              
+125000        05 NUM-MES-             PIC 9(02).                                    
+126000        05 NOM-MES-             PIC X(10).                                    
+127000                                                                              
+128000 01  TAB-DIAS-MES-              PIC X(48) VALUE "01310229033104300            
+129000-    "5310630073108310930103111301231".                                       
+130000 01  RTAB-DIAS-MES- REDEFINES TAB-DIAS-MES-.                                  
+131000     03 WS-DIAS-MES- OCCURS 12 TIMES ASCENDING KEY IS DIAS-MES-               
+132000                         INDEXED BY WK-DIAS-MES-.                             
+133000        05 DIAS-MES-            PIC 9(02).                                    
+134000        05 TOT-DIAS-            PIC 9(02).                                    
+135000                                                                              
+136000 01  TAB-ACUM-DIAS-             PIC X(60) VALUE "01000020310305904            
+137000-    "0900512006151071810821209243102731130412334".                           
+138000 01  RTAB-ACUM-DIAS- REDEFINES TAB-ACUM-DIAS-.                                
+139000     03 WS-ACUM-DIAS- OCCURS 12 TIMES ASCENDING KEY IS ACU-MES-               
+140000                               INDEXED BY WK-ACUM-DIAS-.                      
+141000        05 ACU-MES-             PIC 9(02).                                    
+142000        05 ACU-TOTDIAS-         PIC 9(03).                                    
+143000                                                                              
+144000                                                                              
+145000 77  WS-TOTAL-DIAS-             PIC S9(11) BINARY.                            
+146000 77  WS-ANO-BISIESTO-           PIC S9(11) BINARY.                            
+147000 77  WS-DIA-SEMANA-             PIC S9(11) BINARY.                            
+148000 77  WS-DIAS-ACUMULADOS-        PIC S9(11) BINARY.                            
+149000 77  WS-BISIESTOS-SUPRIMIDOS-   PIC S9(11) BINARY.                            
+150000 77  WS-NOMBRE-MES-             PIC X(10).                                    
+151000                                                                              
+152000*---- PARAMETRO de entrada a la funcion                                       
 153000                                                                              
-154000*---- PARAMETRO DE SALIDA DE LA FUNCION                                       
-155000                                                                              
-156000 01  WS-FECHA-EN-PALABRAS       PIC X(100).                                   
-157000                                                                              
-158000 PROCEDURE DIVISION.                                                          
-159000 PRINCIPAL SECTION.                                                           
-160000 P1.                                                                          
-161000                                                                              
-162000     ACCEPT WS-FECHA-TAAAAMMDD                                                
-163000                                                                              
-164000     PERFORM PROCESO                                                          
-165000       UNTIL WS-AAAAMMDD-A = ZEROS                                            
+154000 01  WS-FECHA-TAAAAMMDD.                                                      
+155000*--- WS-TIPO-CHAR="L", "M", "m" or "C"                                        
+156000*--- "L" => dia en Camel y mes en minusculas                                  
+157000*--- "M" => dia y mes en MAYUSCULAS                                           
+158000*--- "m" => dia y mes en minusculas                                           
+159000*--- "C" => dia y mes en Camel (valor por defecto)                            
+160000     03 WS-TIPO-CHAR            PIC X(01).                                    
+161000     03 WS-AAAAMMDD-A           PIC 9(04).                                    
+162000     03 WS-AAAAMMDD-M           PIC 9(02).                                    
+163000     03 WS-AAAAMMDD-D           PIC 9(02).                                    
+164000                                                                              
+165000*---- PARAMETRO de salida de la funcion                                       
 166000                                                                              
-167000     STOP RUN.                                                                
+167000 01  WS-FECHA-EN-PALABRAS       PIC X(100).                                   
 168000                                                                              
-169000 PROCESO.                                                                     
-170000     PERFORM FECHA-A-PALABRAS                                                 
-171000     DISPLAY WS-FECHA-EN-PALABRAS.                                            
-172000                                                                              
-173000     ACCEPT WS-FECHA-TAAAAMMDD.                                               
-174000                                                                              
-175000 FECHA-A-PALABRAS SECTION.                                                    
-176000 1.  IF (WS-AAAAMMDD-A < 1900 OR WS-AAAAMMDD-A > 2100) OR                     
-177000        (WS-AAAAMMDD-M = 0 OR WS-AAAAMMDD-M > 12) OR                          
-178000        (WS-AAAAMMDD-D = 0 OR WS-AAAAMMDD-D > 31) THEN                        
-179000       MOVE "FECHA INCORRECTA"  TO WS-FECHA-EN-PALABRAS                       
-180000       GO 9                                                                   
-181000     END-IF.                                                                  
-182000     SEARCH ALL WS-DIAS-MES- AT END NEXT SENTENCE                             
-183000       WHEN DIAS-MES-(WK-DIAS-MES-) = WS-AAAAMMDD-M                           
-184000        IF WS-AAAAMMDD-D > TOT-DIAS-(WK-DIAS-MES-) THEN                       
-185000          MOVE "FECHA INCORRECTA"  TO WS-FECHA-EN-PALABRAS                    
-186000          GO 9                                                                
-187000        END-IF.                                                               
-188000     COMPUTE WS-ANO-BISIESTO- = FUNCTION MOD(WS-AAAAMMDD-A, 4).               
-189000     IF WS-ANO-BISIESTO- NOT = 0 AND WS-AAAAMMDD-M = 2 AND                    
-190000        WS-AAAAMMDD-D NOT < 29                                                
-191000       MOVE "FECHA INCORRECTA"  TO WS-FECHA-EN-PALABRAS                       
-192000       GO 9.                                                                  
-193000                                                                              
-194000     SEARCH ALL WS-ACUM-DIAS- AT END NEXT SENTENCE                            
-195000       WHEN ACU-MES-(WK-ACUM-DIAS-) = WS-AAAAMMDD-M                           
-196000         MOVE ACU-TOTDIAS-(WK-ACUM-DIAS-) TO WS-DIAS-ACUMULADOS-.             
-197000                                                                              
-198000     IF WS-ANO-BISIESTO- = 0 AND WS-AAAAMMDD-M NOT > 2                        
-199000       MOVE -1                  TO WS-ANO-BISIESTO-                           
-200000     ELSE                                                                     
-201000       MOVE 0                   TO WS-ANO-BISIESTO-.                          
-202000     COMPUTE WS-TOTAL-DIAS- = WS-DIAS-ACUMULADOS- + WS-AAAAMMDD-D+            
-203000              WS-ANO-BISIESTO- +                                              
-204000              (WS-AAAAMMDD-A - 1900) * 365 - 1 +                              
-205000              FUNCTION DIV(WS-AAAAMMDD-A - 1900, 4)                           
-206000     COMPUTE WS-DIA-SEMANA- = FUNCTION MOD(WS-TOTAL-DIAS-, 7) + 1             
-207000     SEARCH ALL WS-MES- AT END NEXT SENTENCE                                  
-208000       WHEN NUM-MES-(WK-NOM-MES-) = WS-AAAAMMDD-M                             
-209000         MOVE NOM-MES-(WK-NOM-MES-) TO WS-NOMBRE-MES-.                        
-210000     IF WS-TIPO-CHAR = "L"                                                    
-211000       MOVE FUNCTION LOWER-CASE(WS-NOMBRE-MES-) TO WS-NOMBRE-MES-.            
-212000     MOVE SPACES                TO WS-FECHA-EN-PALABRAS                       
-213000     SEARCH ALL WS-DIA- AT END NEXT SENTENCE                                  
-214000       WHEN NUM-DIA-(WK-NOM-DIA-) = WS-DIA-SEMANA-                            
-215000         STRING NOM-DIA-(WK-NOM-DIA-) DELIMITED BY SPACES                     
-216000                ", " WS-AAAAMMDD-D " de " DELIMITED BY SIZE                   
-217000                WS-NOMBRE-MES- DELIMITED BY SPACES                            
-218000                " de " WS-AAAAMMDD-A DELIMITED BY SIZE                        
-219000           INTO WS-FECHA-EN-PALABRAS.                                         
-220000     IF WS-TIPO-CHAR = "m" THEN                                               
-221000       MOVE FUNCTION LOWER-CASE(WS-FECHA-EN-PALABRAS)                         
-222000                                TO  WS-FECHA-EN-PALABRAS                      
-223000     ELSE IF WS-TIPO-CHAR = "M" THEN                                          
-224000       MOVE FUNCTION UPPER-CASE(WS-FECHA-EN-PALABRAS)                         
-225000                                TO WS-FECHA-EN-PALABRAS.                      
-226000 9.  EXIT.                                                                    
+169000 PROCEDURE DIVISION.                                                          
+170000 PRINCIPAL SECTION.                                                           
+171000 P1.                                                                          
+172000*--- Acepta un parametro en formato (XYYYYMMDD), p.ej. "M20181122"            
+173000*---           en donde X: es "L", "M", "m" o "C"                             
+174000     ACCEPT WS-FECHA-TAAAAMMDD                                                
+175000                                                                              
+176000*--- El programa termina ingresando una fecha en ceros: M00000000             
+177000     PERFORM PROCESO                                                          
+178000       UNTIL WS-AAAAMMDD-A = ZEROS                                            
+179000                                                                              
+180000     STOP RUN.                                                                
+181000                                                                              
+182000 PROCESO.                                                                     
+183000     PERFORM FECHA-A-PALABRAS                                                 
+184000     DISPLAY WS-FECHA-EN-PALABRAS.                                            
+185000                                                                              
+186000     ACCEPT WS-FECHA-TAAAAMMDD.                                               
+187000                                                                              
+188000 FECHA-A-PALABRAS SECTION.                                                    
+189000 1.                                                                           
+190000*---Primero, validar la fecha-------------------------------------            
+191000    IF (WS-AAAAMMDD-A < 1900) OR                                              
+192000        (WS-AAAAMMDD-M = 0 OR WS-AAAAMMDD-M > 12) OR                          
+193000        (WS-AAAAMMDD-D = 0 OR WS-AAAAMMDD-D > 31) THEN                        
+194000       MOVE "FECHA INCORRECTA"  TO WS-FECHA-EN-PALABRAS                       
+195000       GO 9                                                                   
+196000     END-IF.                                                                  
+197000     SEARCH ALL WS-DIAS-MES- AT END NEXT SENTENCE                             
+198000       WHEN DIAS-MES-(WK-DIAS-MES-) = WS-AAAAMMDD-M                           
+199000        IF WS-AAAAMMDD-D > TOT-DIAS-(WK-DIAS-MES-) THEN                       
+200000          MOVE "FECHA INCORRECTA"  TO WS-FECHA-EN-PALABRAS                    
+201000          GO 9                                                                
+202000        END-IF.                                                               
+203000     IF FUNCTION MOD(WS-AAAAMMDD-A, 400) = 0                                  
+204000       MOVE 0                   TO WS-ANO-BISIESTO-                           
+205000     ELSE IF FUNCTION MOD(WS-AAAAMMDD-A, 100) = 0                             
+206000       MOVE 1                   TO WS-ANO-BISIESTO-                           
+207000     ELSE                                                                     
+208000       COMPUTE WS-ANO-BISIESTO- = FUNCTION MOD(WS-AAAAMMDD-A, 4).             
+209000     IF WS-ANO-BISIESTO- NOT = 0 AND WS-AAAAMMDD-M = 2 AND                    
+210000        WS-AAAAMMDD-D NOT < 29                                                
+211000       MOVE "FECHA INCORRECTA"  TO WS-FECHA-EN-PALABRAS                       
+212000       GO 9.                                                                  
+213000*----Luego, hacer los calculos -----------------------------------            
+214000     SEARCH ALL WS-ACUM-DIAS- AT END NEXT SENTENCE                            
+215000       WHEN ACU-MES-(WK-ACUM-DIAS-) = WS-AAAAMMDD-M                           
+216000         MOVE ACU-TOTDIAS-(WK-ACUM-DIAS-) TO WS-DIAS-ACUMULADOS-.             
+217000     IF WS-ANO-BISIESTO- = 0 AND WS-AAAAMMDD-M NOT > 2                        
+218000       MOVE -1                  TO WS-ANO-BISIESTO-                           
+219000     ELSE                                                                     
+220000       MOVE 0                   TO WS-ANO-BISIESTO-.                          
+221000     COMPUTE WS-BISIESTOS-SUPRIMIDOS- =                                       
+222000                     FUNCTION DIV(WS-AAAAMMDD-A, 400) -                       
+223000                     FUNCTION DIV(WS-AAAAMMDD-A, 100) + 14                    
+224000     COMPUTE WS-TOTAL-DIAS- = WS-DIAS-ACUMULADOS- + WS-AAAAMMDD-D+            
+225000              WS-ANO-BISIESTO- +                                              
+226000              (WS-AAAAMMDD-A - 1900) * 365 +                                  
+227000              WS-BISIESTOS-SUPRIMIDOS- +                                      
+228000              FUNCTION DIV(WS-AAAAMMDD-A - 1900, 4)                           
+229000     COMPUTE WS-DIA-SEMANA- = FUNCTION MOD(WS-TOTAL-DIAS-, 7) + 1             
+230000     SEARCH ALL WS-MES- AT END NEXT SENTENCE                                  
+231000       WHEN NUM-MES-(WK-NOM-MES-) = WS-AAAAMMDD-M                             
+232000         MOVE NOM-MES-(WK-NOM-MES-) TO WS-NOMBRE-MES-.                        
+233000     IF WS-TIPO-CHAR = "L"                                                    
+234000       MOVE FUNCTION LOWER-CASE(WS-NOMBRE-MES-) TO WS-NOMBRE-MES-.            
+235000     MOVE SPACES                TO WS-FECHA-EN-PALABRAS                       
+236000     SEARCH ALL WS-DIA- AT END NEXT SENTENCE                                  
+237000       WHEN NUM-DIA-(WK-NOM-DIA-) = WS-DIA-SEMANA-                            
+238000         STRING NOM-DIA-(WK-NOM-DIA-) DELIMITED BY SPACES                     
+239000                ", " WS-AAAAMMDD-D " de " DELIMITED BY SIZE                   
+240000                WS-NOMBRE-MES- DELIMITED BY SPACES                            
+241000                " de " WS-AAAAMMDD-A DELIMITED BY SIZE                        
+242000           INTO WS-FECHA-EN-PALABRAS.                                         
+243000*----Finalmente, formateo de la salida----------------------------            
+244000     IF WS-TIPO-CHAR = "m" THEN                                               
+245000       MOVE FUNCTION LOWER-CASE(WS-FECHA-EN-PALABRAS)                         
+246000                                TO  WS-FECHA-EN-PALABRAS                      
+247000     ELSE IF WS-TIPO-CHAR = "M" THEN                                          
+248000       MOVE FUNCTION UPPER-CASE(WS-FECHA-EN-PALABRAS)                         
+249000                                TO WS-FECHA-EN-PALABRAS.                      
+250000 9.  EXIT.                                                                    
