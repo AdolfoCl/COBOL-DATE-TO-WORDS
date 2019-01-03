@@ -1,4 +1,4 @@
-# FECHA-A-PALABRAS (DATE TO WORDS)
+# COBOL DATE TO WORDS
 UNISYS MCP COBOL sample date to words
 
 Return the date in the following format: 
