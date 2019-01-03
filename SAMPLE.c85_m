@@ -44,6 +44,8 @@
 143000                                                                              
 144000                                                                              
 145000 77  WS-TOTAL-DIAS-             PIC S9(11) BINARY.                            
+145200 77  WS-TOTAL-DIAS-ANT-         PIC S9(11) BINARY.                AD190103    
+145400 77  WS-DIFERENCIA-             PIC S9(11) BINARY.                AD190103    
 146000 77  WS-ANO-BISIESTO-           PIC S9(11) BINARY.                            
 147000 77  WS-DIA-SEMANA-             PIC S9(11) BINARY.                            
 148000 77  WS-DIAS-ACUMULADOS-        PIC S9(11) BINARY.                            
@@ -127,6 +129,13 @@
 226000              (WS-AAAAMMDD-A - 1900) * 365 +                                  
 227000              WS-BISIESTOS-SUPRIMIDOS- +                                      
 228000              FUNCTION DIV(WS-AAAAMMDD-A - 1900, 4)                           
+228100                                                                  AD190103    
+228200     IF WS-TOTAL-DIAS-ANT- > 0 THEN                               AD190103    
+228300       COMPUTE WS-DIFERENCIA- =WS-TOTAL-DIAS- - WS-TOTAL-DIAS-ANT-AD190103    
+228400       DISPLAY "HAY " WS-DIFERENCIA- " DIAS DE DIFERENCIA "       AD190103    
+228500               "ENTRE LAS FECHAS INGRESADAS".                     AD190103    
+228600     MOVE WS-TOTAL-DIAS-        TO WS-TOTAL-DIAS-ANT-.            AD190103    
+228700                                                                  AD190103    
 229000     COMPUTE WS-DIA-SEMANA- = FUNCTION MOD(WS-TOTAL-DIAS-, 7) + 1             
 230000     SEARCH ALL WS-MES- AT END NEXT SENTENCE                                  
 231000       WHEN NUM-MES-(WK-NOM-MES-) = WS-AAAAMMDD-M                             
