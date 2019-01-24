@@ -47,12 +47,15 @@
 163000        05 WS-AAAAMMDD-D        PIC 9(02).                        AD190108    
 163500     03 WR-AAAAMMDD REDEFINES WS-AAAAMMDD PIC 9(08).              AD190108    
 164000                                                                              
+164200 01  WS-DELTA                   PIC 9(03).                        AD190124    
+164400                                                                  AD190124    
 165000*---- PARAMETRO de salida de la funcion                                       
 166000                                                                              
 167000 01  WS-FECHA-EN-PALABRAS       PIC X(100).                                   
 168000                                                                              
 169000 PROCEDURE DIVISION.                                                          
 170000 PRINCIPAL SECTION.                                                           
+170500*==================                                               AD190124    
 171000 P1.                                                                          
 172000*--- Acepta un parametro en formato (XYYYYMMDD), p.ej. "M20181122"            
 173000*---           en donde X: es "L", "M", "m" o "C"                             
@@ -65,27 +68,37 @@
 180000     STOP RUN.                                                                
 181000                                                                              
 182000 PROCESO.                                                                     
+182500*--------                                                         AD190124    
 183000     PERFORM FECHA-A-PALABRAS                                                 
 184000     DISPLAY WS-FECHA-EN-PALABRAS.                                            
 185000                                                                              
+185200     ACCEPT WS-DELTA                                              AD190124    
+185400     IF WS-DELTA > 0                                              AD190124    
+185600        PERFORM SUMA-DIAS-HABILES.                                AD190124    
+185800                                                                  AD190124    
 186000     ACCEPT WS-FECHA-TAAAAMMDD.                                               
 187000                                                                              
 188000 FECHA-A-PALABRAS SECTION.                                                    
-189000 1.                                                                           
-189200*---Primero, validar la fecha-------------------------------------AD190108    
+189000*=========================                                        AD190124    
+189100 VALIDA.                                                          AD190124    
+189200*-------Valida la fecha-------------------------------------------AD190124    
 189500     COMPUTE WS-TOTAL-DIAS- =FUNCTION INTEGER-OF-DATE(WR-AAAAMMDD)AD190108    
 189550     IF WS-TOTAL-DIAS- = 0 THEN                                   AD190108    
 189600       MOVE "FECHA INCORRECTA, DEBE INGRESAR 'X20201203' (P.EJ.)" AD190108    
 189620         TO WS-FECHA-EN-PALABRAS                                  AD190108    
 189650       GO 9                                                       AD190108    
 189700     END-IF.                                                      AD190108    
-190000*---Segundo, calcula la diferencia de dias con la fecha anterior--AD190108    
+189750                                                                  AD190124    
+189800 DIFERENCIA.                                                      AD190124    
+190000*-----------Calcula la diferencia de dias con la fecha anterior---AD190124    
 228200     IF WS-TOTAL-DIAS-ANT- > 0 THEN                               AD190103    
 228300       COMPUTE WS-DIFERENCIA- =WS-TOTAL-DIAS- - WS-TOTAL-DIAS-ANT-AD190103    
 228400       DISPLAY "HAY " WS-DIFERENCIA- " DIAS DE DIFERENCIA "       AD190103    
 228500               "ENTRE LAS FECHAS INGRESADAS".                     AD190103    
 228600     MOVE WS-TOTAL-DIAS-        TO WS-TOTAL-DIAS-ANT-.            AD190103    
-228700*---Tercero, Contruye el texto de la fecha------------------------AD190108    
+228620                                                                  AD190124    
+228650 ATEXTO.                                                          AD190124    
+228700*-------Contruye el texto de la fecha-----------------------------AD190124    
 229000     COMPUTE WS-DIA-SEMANA- = FUNCTION MOD(WS-TOTAL-DIAS-, 7) + 1 AD190108    
 230000     SEARCH ALL WS-MES- AT END NEXT SENTENCE                                  
 231000       WHEN NUM-MES-(WK-NOM-MES-) = WS-AAAAMMDD-M                             
@@ -100,11 +113,35 @@
 240000                WS-NOMBRE-MES- DELIMITED BY SPACES                            
 241000                " de " WS-AAAAMMDD-A DELIMITED BY SIZE                        
 242000           INTO WS-FECHA-EN-PALABRAS.                                         
-243000*----Finalmente, formatea la salida-------------------------------AD190108    
+242200                                                                  AD190124    
+242500 FORMATEA.                                                        AD190124    
+243000*---------Formatea la salida--------------------------------------AD190124    
 244000     IF WS-TIPO-CHAR = "m" THEN                                               
 245000       MOVE FUNCTION LOWER-CASE(WS-FECHA-EN-PALABRAS)                         
 246000                                TO  WS-FECHA-EN-PALABRAS                      
 247000     ELSE IF WS-TIPO-CHAR = "M" THEN                                          
 248000       MOVE FUNCTION UPPER-CASE(WS-FECHA-EN-PALABRAS)                         
 249000                                TO WS-FECHA-EN-PALABRAS.                      
+249500                                                                  AD190124    
 250000 9.  EXIT.                                                                    
+250500                                                                  AD190124    
+251000 SUMA-DIAS-HABILES SECTION.                                       AD190124    
+251500*==========================                                       AD190124    
+252000 1.                                                               AD190124    
+253000     COMPUTE WS-TOTAL-DIAS- =FUNCTION INTEGER-OF-DATE(WR-AAAAMMDD)AD190124    
+254000     PERFORM SUMA-DIA                                             AD190124    
+255000       UNTIL WS-DELTA = 0                                         AD190124    
+255500     COMPUTE WR-AAAAMMDD =FUNCTION DATE-OF-INTEGER(WS-TOTAL-DIAS-)AD190124    
+256000     PERFORM ATEXTO OF FECHA-A-PALABRAS                           AD190124    
+257000     PERFORM FORMATEA OF FECHA-A-PALABRAS                         AD190124    
+258000     DISPLAY WS-FECHA-EN-PALABRAS                                 AD190124    
+259000     GO TO 9.                                                     AD190124    
+259500                                                                  AD190124    
+260000 SUMA-DIA.                                                        AD190124    
+260500*---------                                                        AD190124    
+261000     COMPUTE WS-TOTAL-DIAS- = WS-TOTAL-DIAS- + 1                  AD190124    
+262000     COMPUTE WS-DIA-SEMANA- = FUNCTION MOD(WS-TOTAL-DIAS-, 7) + 1 AD190124    
+263000     IF NOT (WS-DIA-SEMANA- = 1 OR 7)                             AD190124    
+264000       COMPUTE WS-DELTA = WS-DELTA - 1.                           AD190124    
+264500                                                                  AD190124    
+265000 9.  EXIT.                                                        AD190124    
